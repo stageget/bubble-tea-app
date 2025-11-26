@@ -1,0 +1,5 @@
+{
+  "name": "Bubble Tea Order",
+  "description": "A modern, mobile-friendly beverage ordering system for a tea shop. Features menu browsing, customizable drink options (sugar, ice, toppings), and integration logic for Google Sheets order submission.",
+  "requestFramePermissions": []
+}

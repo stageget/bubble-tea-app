@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CartItem, OrderData } from '../types';
+import { CartItem } from '../types';
 import { X, Trash2, ShoppingBag } from 'lucide-react';
 
 interface CartDrawerProps {
@@ -36,7 +36,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end">
+    <div className="fixed inset-0 z-[100] flex justify-end">
       {/* Backdrop */}
       <div 
         className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity"
@@ -47,7 +47,7 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
       <div className="relative w-full max-w-md bg-white h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
         
         {/* Header */}
-        <div className="p-5 border-b border-gray-100 flex items-center justify-between bg-white">
+        <div className="p-5 border-b border-gray-100 flex items-center justify-between bg-white shrink-0">
           <div className="flex items-center gap-2">
             <ShoppingBag className="text-brand-600" />
             <h2 className="text-xl font-bold text-gray-900">您的訂單</h2>
@@ -115,14 +115,14 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
         </div>
 
         {/* Footer / Checkout */}
-        <div className="bg-white border-t border-gray-100 p-5 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+        <div className="bg-white border-t border-gray-100 p-5 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] shrink-0 pb-safe">
           <div className="flex justify-between items-center mb-6">
             <span className="text-gray-500 font-medium">總金額 Total</span>
             <span className="text-2xl font-bold text-brand-600">${totalAmount}</span>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
+            <div className="relative">
               <label className="block text-xs font-bold text-gray-500 uppercase mb-1">取餐人姓名 Name</label>
               <input 
                 required
@@ -130,10 +130,11 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="王小明"
-                className="w-full p-3 rounded-lg bg-gray-50 border border-gray-200 focus:bg-white focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition-all"
+                className="w-full p-3 rounded-lg bg-white border border-gray-300 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 outline-none transition-all text-base text-black placeholder-gray-400"
+                style={{ fontSize: '16px' }} 
               />
             </div>
-            <div>
+            <div className="relative">
               <label className="block text-xs font-bold text-gray-500 uppercase mb-1">手機號碼 Phone</label>
               <input 
                 required
@@ -141,7 +142,8 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="0912345678"
-                className="w-full p-3 rounded-lg bg-gray-50 border border-gray-200 focus:bg-white focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition-all"
+                className="w-full p-3 rounded-lg bg-white border border-gray-300 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 outline-none transition-all text-base text-black placeholder-gray-400"
+                style={{ fontSize: '16px' }}
               />
             </div>
 

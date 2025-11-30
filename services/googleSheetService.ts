@@ -1,54 +1,89 @@
-import { OrderData } from '../types';
+import { OrderData, StoreData, MenuItem, ToppingItem } from '../types';
 
-/**
- * ==========================================
- * 後端代理模式
- * 
- * 我們不再前端直接呼叫 Google Sheets。
- * 而是呼叫我們自己的後端 API (/api/order)，
- * 由 Vercel 後端去讀取環境變數 (GOOGLE_SCRIPT_URL) 並轉送資料。
- * ==========================================
- */
+// NOTE: All URLs now point to relative paths (/api/...) 
+// expecting the Vercel Serverless Functions to handle the actual connection.
 
-const STORAGE_KEY = 'google_script_url';
-
-export const getStoredUrl = (): string | null => {
-  return localStorage.getItem(STORAGE_KEY);
-};
-
-export const saveStoredUrl = (url: string): void => {
-  localStorage.setItem(STORAGE_KEY, url);
-};
-
-export const submitOrder = async (order: OrderData): Promise<boolean> => {
-  
-  console.log("🚀 準備發送訂單至後端 Proxy (/api/order)...");
-
-  const payload = JSON.stringify(order);
-
+export const getStoreData = async (): Promise<StoreData | null> => {
   try {
-    // 呼叫我們自己的後端 API
-    // Vercel 會自動將 /api/order 路徑對應到 api/order.js 檔案
-    const response = await fetch('/api/order', {
+    const response = await fetch('/api/store');
+
+    if (response.status === 404) {
+        console.error("❌ API not found (404). If running locally, please use 'vercel dev' instead of 'npm run dev' to enable serverless functions.");
+        throw new Error("API Route not found. Use 'vercel dev' for local development.");
+    }
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("❌ Failed to fetch store data:", error);
+    throw error;
+  }
+};
+
+export const updateStoreMenu = async (storeName: string, items: MenuItem[], toppings: ToppingItem[]): Promise<{ success: boolean; message: string }> => {
+  console.log("🚀 Sending menu update to /api/menu...");
+
+  const payload = {
+    action: 'update_menu',
+    storeName,
+    menu: items,
+    toppings: toppings
+  };
+  
+  try {
+    const response = await fetch('/api/menu', {
       method: 'POST',
-      body: payload,
+      body: JSON.stringify(payload),
       headers: {
         'Content-Type': 'application/json',
       },
     });
 
     if (!response.ok) {
-      // 嘗試讀取錯誤訊息
-      const errorData = await response.json().catch(() => ({}));
-      console.error("Server Error:", errorData);
+        const errData = await response.json();
+        throw new Error(errData.message || `HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+    console.log("✅ Menu updated response:", result);
+    
+    if (result.status === 'success') {
+        return { success: true, message: result.message || "Menu updated successfully." };
+    } else {
+        return { success: false, message: result.message || "Unknown server error." };
+    }
+
+  } catch (error: any) {
+    console.error("❌ Menu update failed:", error);
+    return { success: false, message: error.message || "Network request failed." };
+  }
+};
+
+export const submitOrder = async (order: OrderData): Promise<boolean> => {
+  console.log("🚀 Submitting order to /api/order...");
+  
+  try {
+    const response = await fetch('/api/order', {
+      method: 'POST',
+      body: JSON.stringify(order),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
     const result = await response.json();
-    console.log("✅ 訂單請求已發送成功", result);
-    return true; 
+    console.log("✅ Order submitted:", result);
+    return result.success === true;
   } catch (error) {
-    console.error("❌ 訂單發送失敗:", error);
+    console.error("❌ Order submission failed:", error);
     return false;
   }
 };
